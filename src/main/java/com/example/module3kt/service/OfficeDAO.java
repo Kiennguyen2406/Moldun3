@@ -11,15 +11,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class OfficeService {
+public class OfficeDAO implements IOfficeDAO {
 
-
+    @Override
     public void addOffice(Office office) throws SQLException {
         String sql = "INSERT INTO Offices (MaMB, DienTich, TrangThai, Tang, LoaiVanPhong, GiaChoThue, NgayBatDau, NgayKetThuc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnect.getCon();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, office.getMaMB());
             pstmt.setInt(2, office.getDienTich());
             pstmt.setString(3, office.getTrangThai());
@@ -35,6 +34,7 @@ public class OfficeService {
         }
     }
 
+    @Override
     public List<Office> getAllOffices() {
         List<Office> offices = new ArrayList<>();
         String sql = "SELECT * FROM Offices";
@@ -61,5 +61,44 @@ public class OfficeService {
         }
 
         return offices;
+    }
+
+    @Override
+    public Office FindByMaMb(String maMB) {
+
+
+        Office office = null;
+        String sql = "SELECT * FROM Offices WHERE MaMB = ?";
+        try (Connection connection = DatabaseConnect.getCon();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, maMB);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                office = new Office(
+                        resultSet.getString("MaMB"),
+                        resultSet.getInt("DienTich"),
+                        resultSet.getString("TrangThai"),
+                        resultSet.getInt("Tang"),
+                        resultSet.getString("LoaiVanPhong"),
+                        resultSet.getDouble("GiaChoThue"),
+                        resultSet.getDate("NgayBatDau"),
+                        resultSet.getDate("NgayKetThuc")
+                );
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return office;
+    }
+
+    @Override
+    public void deleteOffice(String maMB) throws SQLException {
+        String sql = "DELETE FROM Offices WHERE MaMB = ?";
+        try (Connection connection = DatabaseConnect.getCon();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, maMB);
+            preparedStatement.executeUpdate();
+        }
+
     }
 }
